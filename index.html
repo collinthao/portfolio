@@ -5,10 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
 </head>
+<style>
+    body {
+        margin: 0;
+        overflow: hidden;
+    }
+    #project-list {
+        display: none;
+        transition: opacity 0.5s ease;
+    }
+</style>
 <body>
+    <div style="position: absolute; top: 20px; left: 20px; z-index: 1; color: white; font-family: sans-serif;">
+        <h1>Collin's Portfolio</h1>
+    </div>
     <button
-    style="position: absolute; top: 20px; left: 20px; z-index: 1;"
-    >Click here</button>
+    style="position: absolute; top: 80%; left: 20px; z-index: 1; background: none; border: 2px solid white; color: white; font-family: sans-serif; padding: 10px 20px; cursor: pointer;"
+    >Projects</button>
+    <div id="project-list" style="position: absolute; top: 80%; left: 80%; z-index: 1; color: white; font-family: sans-serif; display: none;">
+        <ul>
+            <li><a style="color: white; text-decoration: underline;" href="projects.html">Grass Render</a></li>
+            <li><a style="color: white; text-decoration: underline;" href="projects.html">Project 2</a></li>
+            <li><a style="color: white; text-decoration: underline;" href="projects.html">Project 3</a></li>
+        </ul>
+    </div>
+</body>
+<script src = "./htmlEvents.js"></script>
 <script type = "module" src = "./main.js"></script>
 </body>
 </html>

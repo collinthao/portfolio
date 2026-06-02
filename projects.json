@@ -1,0 +1,9 @@
+{
+    "projects": [
+        {
+        "name": "Grass Scene",
+        "description": "Grass scene with wind animation and dynamic lighting.",
+        "image": "assets/grass_scene.png",
+        "link": ""
+        }]
+}

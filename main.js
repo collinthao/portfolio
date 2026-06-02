@@ -5,6 +5,9 @@ const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
 const loader = new GLTFLoader();
 let points;
+
+
+
 const mat = new THREE.ShaderMaterial({
   uniforms: {
     time: { value: 0.0 },
@@ -92,7 +95,7 @@ const rayMat = new THREE.ShaderMaterial({
 
       float k=.02;
       // reduce iterations for speed (less detail)
-      float itr=4.;
+      float itr=5.;
       float t=time*0.00118;
       vec3 axis=randVec(hash(floor(t)*23.45+123.4));
       rot(p,p.xzy, time);
@@ -133,7 +136,8 @@ const rayMat = new THREE.ShaderMaterial({
 
     vec3 doColor(vec3 p)
     {
-        return cos(vec3(7.,6.,4.)+p*.5)*.5+.5;
+        //return cos(vec3(7.,6.,4.)+p*.5)*.5+.5;
+        return vec3(0., 0., 0.8);
     }
 
     void main(){
@@ -161,15 +165,69 @@ const rayMat = new THREE.ShaderMaterial({
             float rimd = pow(clamp(1.-dot(reflect(-li,n),-rd),0.,1.),2.5);
             float frn = rimd + 2.2*(1.-rimd);
             col *= frn*.6;
-            col += vec3(1800.8,70.6,1.2)*pow(clamp(dot(reflect(rd,n),li),0.,100.),10.);
+            col += vec3(0.8,0.6,1.2)*pow(clamp(dot(reflect(rd,n),li),0.,100.),10.);
+            //col += vec3(1800.8,70.6,1.2)*pow(clamp(dot(reflect(rd,n),li),0.,100.),10.);
         }
-        col *= 1.5*vec3(0.5,0.5,0.0);
-        gl_FragColor = vec4(col,1.0);
+        col *= 1.5*vec3(0.5,0.5,0.5);
+        gl_FragColor = vec4((col),1.0);
     }
   `,
   side: THREE.DoubleSide
 });
 
+const rayMat2 = new THREE.ShaderMaterial({
+  uniforms: {
+    time: { value: 0.0 },
+    iResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
+  },
+  vertexShader: `
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  `,
+  fragmentShader: `
+    precision mediump float;
+    uniform float time;
+    uniform vec2 iResolution;
+    varying vec2 vUv;
+
+#define A(x,y) abs(dot(sin(t+x), s/vec3(y)))
+
+void main() {
+    vec2 u = vUv;
+    float d = 0.0;
+    float s = 0.0;
+    float l = 0.0;
+    float t = time + sin(time) * 0.5;
+    vec3 q = vec3(0.0);
+    vec3 p = vec3(0.0);
+    vec2 r = iResolution;
+    vec4 o = vec4(0.0);
+    vec2 fragCoord = u * r;
+    vec2 uv = (fragCoord * 2.0 - r) / r.y;
+
+    for(int ii = 0; ii < 100; ii++) {
+      l = length(vec2(d - 130.0, p));
+      p *= vec3(0.125, 0.6, 1.0);
+      d += s = min(0.2 + 0.4 * abs(q.y + 20.0 + sin(l * 0.2 - t * 10.0)),
+                   0.3 + 0.3 * abs(3.0 - length(p.xy)) + step(q.y, -12.0));
+      o += 1.0 / s;
+      q = p = vec3(d * (uv + uv - r) / r.y, d - 70.0);
+      p.yz *= mat2(0.36, -0.93, 0.93, 0.36);
+      p.z += t * 30.0;
+      for(s = 0.03; s < 4.0; s += s) {
+        p.yz -= A(t + 0.32 * p / s, 1.0);
+        q += A(0.3 * q.z + 0.7 * q / s, 8.0);
+      }
+    }
+
+    gl_FragColor = vec4(tanh(o * o / 20000.0));
+}
+  `,
+  side: THREE.DoubleSide
+});
 async function loadModel() {
     const gltf = await loader.loadAsync(  '/DamagedHelmet.glb');
     points = new THREE.Points( gltf.scene.children[  0  ].geometry, mat );
@@ -177,7 +235,6 @@ async function loadModel() {
 };
 
 const renderer = new THREE.WebGLRenderer();
-// cap pixel ratio to avoid excessive fragment work on high-DPI displays
 renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1));
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
@@ -189,7 +246,7 @@ camera.position.z = 5;
 
 function animate( time ) {
   mat.uniforms.time.value = time / 1000;
-  rayMat.uniforms.time.value = time / 1000.;
+  rayMat.uniforms.time.value = time / 10000.;
   rayMat.uniforms.iResolution.value.set(window.innerWidth, window.innerHeight);
 
     renderer.render( scene, camera );
